@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
 import wx
-import wxFrame
+import frame
+
 
 class App(wx.App):
     def OnInit(self):
-        self.main = wxFrame.wxFrame(None)
+        self.main = frame.Frame(None)
         self.main.Show(True)
         self.SetTopWindow(self.main)
         return True
+
 
 def main():
     application = App(0)
