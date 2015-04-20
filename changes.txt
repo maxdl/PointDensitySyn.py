@@ -1,3 +1,11 @@
+2015-04-19:
+- Further code cleanup.
+- Bug fixes.
+2014-11-11:
+- Code cleanup and miscellaneous changes. 
+- License changed to the MIT license.
+2014-08-14:
+- Minor bug fixes and changes.
 2014-05-14:
 - View file dialog is now properly destroyed when closed.
 - PyExcelerator is again included in the Window binaries.
