@@ -5,8 +5,8 @@ import sys
 
 title = "PointDensitySyn"
 author = "Max Larsson"
-version = "1.0pre8"
-date = ("April", "21", "2015")
+version = "1.0pre9"
+date = ("May", "16", "2016")
 email = "max.larsson@liu.se"
 homepage = "www.hu.liu.se/forskning/larsson-max/software"
 if hasattr(sys, 'frozen'):
