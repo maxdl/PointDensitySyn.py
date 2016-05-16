@@ -731,7 +731,7 @@ class ProfileData:
                 self.path = ProfileBorderData(self._get_coords(li, "path"))
             elif s.upper() in ("POSTSYNAPTIC_DENSITY", "PSD_OR_ACTIVE_ZONE"):
                 self.psd_li.append(Psd(self._get_coords(li, "PSD"), self))
-            elif s.upper() == "PROFILE_HOLE":
+            elif s.upper() in ("PROFILE_HOLE", "HOLE"):
                 self.path.add_hole(geometry.SegmentedPath(self._get_coords(
                     li, "hole")))
             elif s.upper() in ("POINTS", "PARTICLES"):
