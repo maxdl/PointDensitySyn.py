@@ -622,28 +622,32 @@ class ProfileData:
                 mcli[n]["pli"].append(p)
             for p in mcli[n]["pli"]:
                 p.determine_stuff()
-        sys.stdout.write("\n-> Determining simulated interpoint distances:"
-                         "\n   ")
-        for n in range(0, self.opt.monte_carlo_runs):
-            if self.opt.stop_requested:
-                return []
-            dot_progress(n)
-            if self.opt.interpoint_relations["simulated - simulated"]:
-                    distlis = self._get_same_interpoint_distances(
-                        mcli[n]["pli"])
-                    mcli[n]["simulated - simulated"]["dist"].append(distlis[0])
-                    mcli[n]["simulated - simulated"]["latdist"].append(
-                        distlis[1])
-            if self.opt.interpoint_relations["simulated - point"]:
-                distlis = self._get_interpoint_distances2(mcli[n]["pli"], pli)
-                mcli[n]["simulated - point"]["dist"].append(distlis[0])
-                mcli[n]["simulated - point"]["latdist"].append(distlis[1])
-            if self.opt.interpoint_relations["point - simulated"]:
-                distlis = self._get_interpoint_distances2(pli, mcli[n]["pli"])
-                mcli[n]["point - simulated"]["dist"].append(distlis[0])
-                mcli[n]["point - simulated"]["latdist"].append(distlis[1])
-        sys.stdout.write("\n-> Determining simulated clusters:\n   ")
+        if self.opt.determine_interpoint_dists:
+            sys.stdout.write("\n-> Determining simulated interpoint distances:"
+                             "\n   ")
+            for n in range(0, self.opt.monte_carlo_runs):
+                if self.opt.stop_requested:
+                    return []
+                dot_progress(n)
+                if self.opt.interpoint_relations["simulated - simulated"]:
+                        distlis = self._get_same_interpoint_distances(
+                            mcli[n]["pli"])
+                        mcli[n]["simulated - simulated"]["dist"].append(
+                            distlis[0])
+                        mcli[n]["simulated - simulated"]["latdist"].append(
+                            distlis[1])
+                if self.opt.interpoint_relations["simulated - point"]:
+                    distlis = self._get_interpoint_distances2(mcli[n]["pli"],
+                                                              pli)
+                    mcli[n]["simulated - point"]["dist"].append(distlis[0])
+                    mcli[n]["simulated - point"]["latdist"].append(distlis[1])
+                if self.opt.interpoint_relations["point - simulated"]:
+                    distlis = self._get_interpoint_distances2(pli,
+                                                              mcli[n]["pli"])
+                    mcli[n]["point - simulated"]["dist"].append(distlis[0])
+                    mcli[n]["point - simulated"]["latdist"].append(distlis[1])
         if self.opt.determine_clusters:
+            sys.stdout.write("\n-> Determining simulated clusters:\n   ")
             for n, li in enumerate(mcli):
                 if self.opt.stop_requested:
                     return []

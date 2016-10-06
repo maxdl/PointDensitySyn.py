@@ -84,8 +84,9 @@ def save_output(profileli, opt):
 
     def write_profile_summary():
         with file_io.FileWriter("profile.summary", opt) as f:
-            f.writerow(["Profile perimeter",
-                        "Profile area",
+            f.writerow(["Perimeter",
+                        "Area",
+                        "Max Feret diameter",
                         "Number of PSDs/AZs",                        
                         "Synaptic membrane length incl perforations",
                         "Synaptic membrane length excl perforations",   
@@ -99,11 +100,12 @@ def save_output(profileli, opt):
                         "Point density in profile",
                         "Point density in profile excl PSD",
                         "Point density in PSD",
-                        "Profile ID",
+                        "ID",
                         "Input file",
                         "Comment"])
             f.writerows([[m(pro.path.perimeter(), pro.pixelwidth),
                           m2(pro.path.area(), pro.pixelwidth),
+                          m(pro.path.feret_diameter(), pro.pixelwidth),
                           len(pro.psd_li),                  
                           m(pro.total_synm.length(), pro.pixelwidth),  
                           sum([m(psd.synm.length(), pro.pixelwidth) 
@@ -151,6 +153,7 @@ def save_output(profileli, opt):
                         % pstr.capitalize(),
                         "Distance to plasma membrane",
                         "Lateral distance to PSD center",
+                        "Normalized lateral distance to PSD center",
                         "Perpendicular distance to PSD",
                         "Within profile",
                         "Plasma membrane-associated",
@@ -166,6 +169,7 @@ def save_output(profileli, opt):
             f.writerows([[n+1, 
                           m(p.dist_to_path, pro.pixelwidth),
                           m(p.lateral_dist_psd, pro.pixelwidth),
+                          m(p.norm_lateral_dist_psd, pro.pixelwidth),
                           m(p.perpend_dist_psd, pro.pixelwidth),
                           sc.yes_or_no(p.is_within_profile),
                           sc.yes_or_no(p.is_associated_with_path),
@@ -281,7 +285,7 @@ def save_output(profileli, opt):
                                 % dtype, opt) as f:
             f.writerows(table)
 
-    def write_mc_dist_to_border_summary():
+    def write_mc_dist_to_border():
 
         def m_li(*_li):
             return [m(x, pro.pixelwidth) for x in _li]
@@ -293,8 +297,41 @@ def save_output(profileli, opt):
         for pro in eval_proli:
             table.extend(map(m_li, *[[p.dist_to_path for p in li["pli"]]
                                      for li in pro.mcli]))
-        with file_io.FileWriter("simulated.postsynaptic.element.membrane."
-                                "distances", opt) as f:
+        with file_io.FileWriter("simulated.element.membrane.distances",
+                                opt) as f:
+            f.writerows(table)
+
+    def write_mc_dist_to_border_only_synaptic():
+
+        def m_li(*_li):
+            return [m(x, pro.pixelwidth) for x in _li]
+
+        def replace_none(s):
+            return s if s is not None else ""
+
+        if not opt.run_monte_carlo:
+            return
+        table = list()
+        table.append(["Distance to membrane of simulated points projecting "
+                      "on PSD/AZ (normalized lateral distance to PSD/AZ center"
+                      " <= 1)"])
+        table[0].extend(["" for n in range(1, opt.monte_carlo_runs)])
+        table.append(["Run %d" % (n + 1)
+                      for n in range(0, opt.monte_carlo_runs)])
+        for pro in eval_proli:
+            table.extend(map(m_li, *[[p.dist_to_path for p in li["pli"]
+                                      if p.norm_lateral_dist_psd <= 1]
+                                     for li in pro.mcli]))
+        # Remove None by transposing, deleting None elements, transposing again
+        # (which will pad shorter columns with None), and then replacing
+        # None with "". Seems a bit cumbersome but it is the easiest way I can
+        # come up with right now.
+        transposed = map(lambda *row: list(row), *table)
+        transposed = [[e for e in _row if e is not None] for _row in transposed]
+        table = map(lambda *row: list(row), *transposed)
+        table = [[replace_none(e) for e in _row] for _row in table]
+        with file_io.FileWriter("simulated.membrane.distances.synaptic.only",
+                                opt) as f:
             f.writerows(table)
 
     def write_mc_ip_dists(dist_type):
@@ -362,7 +399,8 @@ def save_output(profileli, opt):
     write_point_summary("random")
     write_interpoint_summaries()
     write_cluster_summary()
-    write_mc_dist_to_border_summary()
+    write_mc_dist_to_border()
+    write_mc_dist_to_border_only_synaptic()
     write_mc_dist_to_psd("metric")
     write_mc_dist_to_psd("normalized")
     write_mc_ip_dists("shortest")
