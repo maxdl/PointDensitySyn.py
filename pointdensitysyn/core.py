@@ -316,6 +316,7 @@ class Psd(geometry.SegmentedPath):
         """ Adjust PSD coordinates so that the PSD ends exactly
          on the plasma membrane.
         """
+        # TODO: Revise to deal better with "bad" PSD outlines
         # Partition psd into paths defined by the intersections with
         # the plasma membrane, beginning and ending with the projections
         # of the end nodes of psd. Each path will then be completely on
@@ -341,13 +342,22 @@ class Psd(geometry.SegmentedPath):
         # Now, look for the longest path. This is assumed to be the intended
         # psd. (Perhaps area is more relevant. However, this is messier because
         # we need to determine the part of dm enclosed by path for each path.)
+        # Update 2016-10-14: the length of the path is here defined as its
+        # number of vertices.
         max_length = 0
+        old_max_length = 0
         longest_path = geometry.SegmentedPath()
         for path in pathli:
-            length = path.length()
-            if length > max_length:
+            #print path
+            if len(path) >= max_length:
                 longest_path = path
-                max_length = length
+                old_max_length = max_length
+                max_length = len(path)
+        if max_length < 3 or max_length == old_max_length:
+            #print max_length, old_max_length, longest_path
+            raise ProfileError(self.profile,
+                               "Could not determine postsynaptic "
+                               "density")
         del self[:]
         self.extend(longest_path)
         # Now, orient the PSD so that it runs in the same direction as the
