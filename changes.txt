@@ -1,3 +1,8 @@
+2018-04-25:
+- Now works with Python 3 instead of Python 2.
+- Uses openpyxl instead of pyExcelerator, and generates .xlsx files instead of
+  old-format .xls files.
+- Code cleanup and other minor changes.
 2016-05-16:
 - Bug fix.
 2015-04-19:

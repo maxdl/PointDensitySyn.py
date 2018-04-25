@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os.path
 import sys
 
@@ -8,7 +6,7 @@ author = "Max Larsson"
 version = "1.0"
 date = ("October", "6", "2016")
 email = "max.larsson@liu.se"
-homepage = "www.hu.liu.se/forskning/larsson-max/software"
+homepage = "www.liu.se/medfak/forskning/larsson-max/software"
 if hasattr(sys, 'frozen'):
     if '_MEIPASS2' in os.environ: 
         path = os.environ['_MEIPASS2']
