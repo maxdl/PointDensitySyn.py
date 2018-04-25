@@ -17,13 +17,13 @@ setup(
     author="Max Larsson",
     author_email="max.larsson@liu.se",
     license="MIT",
-    url="http://www.hu.liu.se/forskning/larsson-max/software",
+    url="http://www.liu.se/medfak/forskning/larsson-max/software",
     packages=find_packages(),
     entry_points={
     'console_scripts':
-        ['PointDensitySyn = pointdensitysyn.PointDensitySyn:main'],
+        ['PointDensitySyn = PointDensitySyn:main'],
     'gui_scripts':
-        ['PointDensitySyn = pointdensitysyn.PointDensitySyn:main']        
+        ['PointDensitySyn = PointDensitySyn:main']        
     },
     data_files=[('pointdensitysyn', ['pointdensitysyn/pds.ico'])],
     install_requires=['pyexcelerator']
