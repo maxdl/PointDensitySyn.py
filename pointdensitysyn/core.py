@@ -252,7 +252,7 @@ class Point(geometry.Point):
             return self.nearest_lateral_neighbour_dist
 
 
-class ProfileBorderData(geometry.SegmentedPath):
+class ProfileBorder(geometry.SegmentedPath):
     def __init__(self, pointlist=None, profile=None):
         if pointlist is None:
             pointlist = []
@@ -269,7 +269,7 @@ class PointList(list):
             raise TypeError("not a list of Point elements")
 
 
-class ClusterData(list):
+class Cluster(list):
     def __init__(self, pointli=None):
         super().__init__()
         if pointli is None:
@@ -419,7 +419,7 @@ class Psd(geometry.SegmentedPath):
 # End of class PsdAz
 
 
-class ProfileData:
+class Profile(object):
     def __init__(self, inputfn, opt):
         self.inputfn = inputfn
         self.src_img = None
@@ -560,7 +560,7 @@ class ProfileData:
 # TODO: check simulation windows etc!
     def __run_monte_carlo(self):
 
-        def is_valid(p_candidate):
+        def in_window(p_candidate):
             def is_within_or_associated_with_profile():
                 """Depending on self.opt.monte_carlo_strict_location,
                 returns True if within or associated with profile.
@@ -575,46 +575,45 @@ class ProfileData:
                     return True
                 return False
 
-            # todo: place pt.get_psd_association at some convenient place
             if p_candidate.is_within_hole:
                 return False
             if self.opt.monte_carlo_simulation_window == 'profile':
-                if is_within_or_associated_with_profile():
-                    return True
+                return is_within_or_associated_with_profile()
             elif self.opt.monte_carlo_simulation_window == 'profile + shell':
-                if is_within_or_associated_with_profile() or p_candidate.is_within_shell:
-                    return True
-            elif self.opt.monte_carlo_simulation_window == 'profile - postsynaptic density':
-                # only discard points strictly within PSD/AZ regardless of
+                return is_within_or_associated_with_profile() or p_candidate.is_within_shell
+            # Now points must relate to PSD, so we should calculate this
+            p_candidate.get_psd_association()
+            if self.opt.monte_carlo_simulation_window == 'profile - postsynaptic density':
+                # Only discard points strictly within PSD regardless of
                 # self.opt.monte_carlo_strict_location
-                if is_within_or_associated_with_profile() and not p_candidate.is_within_psd:
-                    return True
+                return is_within_or_associated_with_profile() and not p_candidate.is_within_psd
             elif self.opt.monte_carlo_simulation_window == 'profile + shell - postsynaptic density':
-                # only discard points strictly within PSD/AZ regardless of
+                # Only discard points strictly within PSD regardless of
                 # self.opt.monte_carlo_strict_location
-                if (is_within_or_associated_with_profile() or p_candidate.is_within_shell
-                        and not p_candidate.is_within_psd):
-                    return True
+                return (is_within_or_associated_with_profile() or p_candidate.is_within_shell
+                        and not p_candidate.is_within_psd)
             elif self.opt.monte_carlo_simulation_window == 'postsynaptic density':
-                # print pt.is_within_psd, pt.is_associated_with_psd
-                if self.opt.monte_carlo_strict_location and p_candidate.is_within_psd:
+                if p_candidate.is_within_psd:
                     return True
-                elif p_candidate.is_associated_with_psd:
+                elif self.opt.monte_carlo_strict_location:
+                    return False
+                elif p_candidate.is_associated_with_psd and p_candidate.is_within_shell:
                     return True
             return False
 
-        box = self.path.bounding_box()
-        if self.opt.monte_carlo_simulation_window == 'profile' and \
-                self.opt.monte_carlo_strict_location:
+        # Setting border depending on window and whether
+        # opt.monte_carlo_strict_location is True;
+        # This is only to speed up the generation of simulated points
+        if self.opt.monte_carlo_simulation_window in ('profile + shell',
+                                                      'profile + shell - postsynaptic density'):
+            border = geometry.to_pixel_units(self.opt.shell_width, self.pixelwidth)
+        elif not self.opt.monte_carlo_strict_location:
             border = 0
         else:
-            # If shell width is smaller than spatial resolution,
-            # the former must be used because all real particles
-            # outside the shell have been discarded
-            border = geometry.to_pixel_units(min(self.opt.shell_width, self.opt.spatial_resolution),
-                                             self.pixelwidth)
-        pli = [p for p in self.pli if is_valid(p)]
+            border = geometry.to_pixel_units(self.opt.spatial_resolution, self.pixelwidth)
+        pli = [p for p in self.pli if in_window(p)]
         numpoints = len(pli)
+        box = self.path.bounding_box()
         mcli = []
         for n in range(0, self.opt.monte_carlo_runs):
             if self.opt.stop_requested:
@@ -633,7 +632,7 @@ class ProfileData:
                     y = random.randint(int(box[0].y - border),
                                        int(box[2].y + border) + 1)
                     p = Point(x, y, ptype='simulated', profile=self)
-                    if p not in mcli[n]['pli'] and is_valid(p):
+                    if p not in mcli[n]['pli'] and in_window(p):
                         break
                 # escape the while loop when a valid simulated point is found
                 mcli[n]['pli'].append(p)
@@ -681,7 +680,7 @@ class ProfileData:
         for c in clusterli:
             if self.opt.stop_requested:
                 return
-            c.nearest_cluster = ClusterData()
+            c.nearest_cluster = Cluster()
             if len(clusterli) == 1:
                 c.dist_to_nearest_cluster = -1
                 return
@@ -715,7 +714,7 @@ class ProfileData:
                         break
             else:
                 p1.cluster = len(clusterli)
-                clusterli.append(ClusterData([p1]))
+                clusterli.append(Cluster([p1]))
         self.__process_clusters(clusterli)
         return clusterli
 
@@ -747,8 +746,8 @@ class ProfileData:
                 except (IndexError, ValueError):
                     raise ProfileError(self, "PIXELWIDTH is not a valid number")
             elif s.upper() in ("PLASMA_MEMBRANE", "PROFILE_BORDER"):
-                self.path = ProfileBorderData(self.__get_coords(li, 'path'))
-            elif s.upper() in ("POSTSYNAPTIC_DENSITY", "PSD_OR_ACTIVE_ZONE"):
+                self.path = ProfileBorder(self.__get_coords(li, 'path'))
+            elif s.upper() in ("POSTSYNAPTIC_DENSITY", "PSD_OR_ACTIVE_ZONE", "PSD"):
                 self.psd_li.append(Psd(self.__get_coords(li, "PSD"), self))
             elif s.upper() in ("PROFILE_HOLE", "HOLE"):
                 self.holeli.append(geometry.SegmentedPath(self.__get_coords(li, 'hole')))

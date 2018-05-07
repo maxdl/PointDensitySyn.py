@@ -103,13 +103,13 @@ class Frame(gui.MainFrame):
         self.SimulationWindowChoice.Enable(self.MonteCarloCheckBox.GetValue())
         self.SimulationWindowLabel.Enable(self.MonteCarloCheckBox.GetValue())
         if (self.MonteCarloCheckBox.GetValue() and
-           self.SimulationWindowChoice.GetStringSelection() == 'Profile'):
+           self.SimulationWindowChoice.GetStringSelection() in ('Profile', 'Postsynaptic density')):
             self.StrictLocCheckBox.Enable(True)
         else:
             self.StrictLocCheckBox.Enable(False)
 
     def OnSimulationWindowChoice(self, event):
-        if self.SimulationWindowChoice.GetStringSelection() == 'Profile':
+        if self.SimulationWindowChoice.GetStringSelection() in ('Profile', 'Postsynaptic density'):
             self.StrictLocCheckBox.Enable(True)
         else:
             self.StrictLocCheckBox.Enable(False)

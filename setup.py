@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 from ez_setup import use_setuptools
 use_setuptools()
@@ -26,5 +25,5 @@ setup(
         ['PointDensitySyn = PointDensitySyn:main']        
     },
     data_files=[('pointdensitysyn', ['pointdensitysyn/pds.ico'])],
-    install_requires=['pyexcelerator']
+    install_requires=['wxpython', 'openpyxl']
 )

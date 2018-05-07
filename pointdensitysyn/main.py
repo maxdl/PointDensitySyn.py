@@ -456,7 +456,7 @@ def main_proc(parent):
             sys.stdout.write("\nNo more input files...\n")
             break
         parent.process_queue.put(("new_file", inputfn))
-        profileli.append(core.ProfileData(inputfn, opt))
+        profileli.append(core.Profile(inputfn, opt))
         profileli[-1].process()
         if opt.stop_requested:
             sys.stdout.write("\n--- Session aborted by user %s local time ---\n" % time.ctime())

@@ -86,35 +86,35 @@ class MainFrame ( wx.Frame ):
 		
 		self.SpatResLabel = wx.StaticText( self.AnalysisOptionsTab, wx.ID_ANY, u"Spatial resolution:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.SpatResLabel.Wrap( -1 )
-		self.SpatResLabel.SetToolTip( u"Spatial resolution of the point pattern" )
+		self.SpatResLabel.SetToolTip( u"Spatial resolution of the particle pattern" )
 		
 		GenAnalysisOptionsSizer.Add( self.SpatResLabel, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.SpatResSpinCtrl = wx.SpinCtrl( self.AnalysisOptionsTab, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 75,-1 ), wx.SP_ARROW_KEYS, 0, 1000, 25 )
-		self.SpatResSpinCtrl.SetToolTip( u"Spatial resolution of the point pattern" )
+		self.SpatResSpinCtrl.SetToolTip( u"Spatial resolution of the particle pattern" )
 		
 		GenAnalysisOptionsSizer.Add( self.SpatResSpinCtrl, 0, wx.ALL, 5 )
 		
 		self.SpatResUnitLabel = wx.StaticText( self.AnalysisOptionsTab, wx.ID_ANY, u"metric units", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_LEFT )
 		self.SpatResUnitLabel.Wrap( -1 )
-		self.SpatResUnitLabel.SetToolTip( u"Spatial resolution of the point pattern" )
+		self.SpatResUnitLabel.SetToolTip( u"Spatial resolution of the particle pattern" )
 		
 		GenAnalysisOptionsSizer.Add( self.SpatResUnitLabel, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		self.ShellWidthLabel = wx.StaticText( self.AnalysisOptionsTab, wx.ID_ANY, u"Shell width:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.ShellWidthLabel.Wrap( -1 )
-		self.ShellWidthLabel.SetToolTip( u"Points farther than this from the postsynaptic element are discarded" )
+		self.ShellWidthLabel.SetToolTip( u"Points farther than this from the plasma membrane are discarded" )
 		
 		GenAnalysisOptionsSizer.Add( self.ShellWidthLabel, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.ShellWidthSpinCtrl = wx.SpinCtrl( self.AnalysisOptionsTab, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 75,-1 ), wx.SP_ARROW_KEYS, 0, 1000, 200 )
-		self.ShellWidthSpinCtrl.SetToolTip( u"Points farther than this from the postsynaptic element are discarded" )
+		self.ShellWidthSpinCtrl.SetToolTip( u"Points farther than this from the plasma membrane are discarded" )
 		
 		GenAnalysisOptionsSizer.Add( self.ShellWidthSpinCtrl, 0, wx.ALL, 5 )
 		
 		self.ShellWidthUnitLabel = wx.StaticText( self.AnalysisOptionsTab, wx.ID_ANY, u"metric units", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_LEFT )
 		self.ShellWidthUnitLabel.Wrap( -1 )
-		self.ShellWidthUnitLabel.SetToolTip( u"Points farther than this from the postsynaptic element are discarded" )
+		self.ShellWidthUnitLabel.SetToolTip( u"Points farther than this from the plasma membrane are discarded" )
 		
 		GenAnalysisOptionsSizer.Add( self.ShellWidthUnitLabel, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
@@ -160,8 +160,8 @@ class MainFrame ( wx.Frame ):
 		
 		InterpointShortLatDistSizer.Add( self.ShortestDistCheckBox, 0, wx.ALL, 5 )
 		
-		self.LateralDistCheckBox = wx.CheckBox( InterpointSizer.GetStaticBox(), wx.ID_ANY, u"Distance along profile border", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.LateralDistCheckBox.SetToolTip( u"Lateral distance along profile border between the projections of the points on the border" )
+		self.LateralDistCheckBox = wx.CheckBox( InterpointSizer.GetStaticBox(), wx.ID_ANY, u"Distance along plasma membrane", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.LateralDistCheckBox.SetToolTip( u"Lateral distance along plasma membrane between the projections of the points on the plasma membrane" )
 		
 		InterpointShortLatDistSizer.Add( self.LateralDistCheckBox, 0, wx.ALL, 5 )
 		
@@ -181,7 +181,7 @@ class MainFrame ( wx.Frame ):
 		MonteCarloSizer2.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 		
 		self.MonteCarloCheckBox = wx.CheckBox( MonteCarloSizer.GetStaticBox(), wx.ID_MONTECARLOCHECKBOX, u"Perform Monte Carlo simulations", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.MonteCarloCheckBox.SetToolTip( u"Generate a random point pattern evenly distributed over the profile (plus the shell defined by the skipping distance)" )
+		self.MonteCarloCheckBox.SetToolTip( u"Generate a random point pattern evenly distributed over the profile (plus the shell defined by the shell width)" )
 		
 		MonteCarloSizer2.Add( self.MonteCarloCheckBox, wx.GBPosition( 0, 0 ), wx.GBSpan( 1, 2 ), wx.ALL|wx.EXPAND, 5 )
 		
@@ -210,7 +210,7 @@ class MainFrame ( wx.Frame ):
 		MonteCarloSizer2.Add( self.SimulationWindowChoice, wx.GBPosition( 2, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
 		self.StrictLocCheckBox = wx.CheckBox( MonteCarloSizer.GetStaticBox(), wx.ID_ANY, u"Strict localization in window", wx.DefaultPosition, wx.DefaultSize, 0)
-		self.StrictLocCheckBox.SetToolTip(u"If checked, points located outside the window are excluded, even if they are within the spatial resolution of the border")
+		self.StrictLocCheckBox.SetToolTip(u"If checked, points located outside the window are excluded, even if they are within the spatial resolution of the plasma membrane")
 
 		MonteCarloSizer2.Add(self.StrictLocCheckBox, wx.GBPosition(3, 1), wx.GBSpan(1, 1), wx.ALL, 5)
 

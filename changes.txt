@@ -1,3 +1,13 @@
+2018-05-08:
+- Fixed a bug that prevented use of PSD as Monte Carlo simulation window.
+- PSD simulation window can now also be used without strict localization.
+- Modified the __run_monte_carlo() function with respect to generation
+  of simulated points and the testing of their localization in the 
+  simulation window to make it clearer.
+- Changed icon.
+- Renamed some class names for succinctness: ProfileBorderData to ProfileBorder, 
+  ClusterData to Cluster, ProfileData to Profile.
+- Other minor changes.
 2018-04-25:
 - Now works with Python 3 instead of Python 2.
 - Uses openpyxl instead of pyExcelerator, and generates .xlsx files instead of
