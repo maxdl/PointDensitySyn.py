@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*- 
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version Jun 17 2015)
+## Python code generated with wxFormBuilder (version May  9 2018)
 ## http://www.wxformbuilder.org/
 ##
-## PLEASE DO "NOT" EDIT THIS FILE!
+## PLEASE DO *NOT* EDIT THIS FILE!
 ###########################################################################
 
 import wx
-import wx.adv
 import wx.xrc
+import wx.adv
 
 wx.ID_ADDFILE = 1000
 wx.ID_REMOVEFILE = 1001
@@ -27,7 +27,7 @@ wx.ID_START = 1007
 class MainFrame ( wx.Frame ):
 	
 	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.CLOSE_BOX|wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 808,780 ), style = wx.CLOSE_BOX|wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 		
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 		self.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_3DLIGHT ) )
@@ -91,7 +91,7 @@ class MainFrame ( wx.Frame ):
 		GenAnalysisOptionsSizer.Add( self.SpatResLabel, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.SpatResSpinCtrl = wx.SpinCtrl( self.AnalysisOptionsTab, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 75,-1 ), wx.SP_ARROW_KEYS, 0, 1000, 25 )
-		self.SpatResSpinCtrl.SetToolTip( u"Spatial resolution of the particle pattern" )
+		self.SpatResSpinCtrl.SetToolTip( u"Spatial resolution of the point pattern" )
 		
 		GenAnalysisOptionsSizer.Add( self.SpatResSpinCtrl, 0, wx.ALL, 5 )
 		
@@ -108,13 +108,13 @@ class MainFrame ( wx.Frame ):
 		GenAnalysisOptionsSizer.Add( self.ShellWidthLabel, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.ShellWidthSpinCtrl = wx.SpinCtrl( self.AnalysisOptionsTab, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 75,-1 ), wx.SP_ARROW_KEYS, 0, 1000, 200 )
-		self.ShellWidthSpinCtrl.SetToolTip( u"Points farther than this from the plasma membrane are discarded" )
+		self.ShellWidthSpinCtrl.SetToolTip( u"Points farther than this from the postsynaptic element are discarded" )
 		
 		GenAnalysisOptionsSizer.Add( self.ShellWidthSpinCtrl, 0, wx.ALL, 5 )
 		
 		self.ShellWidthUnitLabel = wx.StaticText( self.AnalysisOptionsTab, wx.ID_ANY, u"metric units", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_LEFT )
 		self.ShellWidthUnitLabel.Wrap( -1 )
-		self.ShellWidthUnitLabel.SetToolTip( u"Points farther than this from the plasma membrane are discarded" )
+		self.ShellWidthUnitLabel.SetToolTip( u"Points farther than this from the postsynaptic element are discarded" )
 		
 		GenAnalysisOptionsSizer.Add( self.ShellWidthUnitLabel, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
@@ -149,6 +149,7 @@ class MainFrame ( wx.Frame ):
 		InterpointSizer2.Add( self.InterpointModeLabel, wx.GBPosition( 1, 0 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.InterpointCheckBox = wx.CheckBox( InterpointSizer.GetStaticBox(), wx.ID_ANY, u"Calculate interpoint distances", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.InterpointCheckBox.SetValue(True) 
 		InterpointSizer2.Add( self.InterpointCheckBox, wx.GBPosition( 0, 0 ), wx.GBSpan( 1, 2 ), wx.ALL|wx.EXPAND, 5 )
 		
 		InterpointShortLatDistSizer = wx.FlexGridSizer( 2, 2, 0, 0 )
@@ -161,7 +162,8 @@ class MainFrame ( wx.Frame ):
 		InterpointShortLatDistSizer.Add( self.ShortestDistCheckBox, 0, wx.ALL, 5 )
 		
 		self.LateralDistCheckBox = wx.CheckBox( InterpointSizer.GetStaticBox(), wx.ID_ANY, u"Distance along plasma membrane", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.LateralDistCheckBox.SetToolTip( u"Lateral distance along plasma membrane between the projections of the points on the plasma membrane" )
+		self.LateralDistCheckBox.SetValue(True) 
+		self.LateralDistCheckBox.SetToolTip( u"Lateral distance along plasma membrane between the projections of the points on the membrane" )
 		
 		InterpointShortLatDistSizer.Add( self.LateralDistCheckBox, 0, wx.ALL, 5 )
 		
@@ -170,6 +172,13 @@ class MainFrame ( wx.Frame ):
 		
 		
 		InterpointSizer.Add( InterpointSizer2, 1, wx.EXPAND, 5 )
+		
+		self.ExcludeParticlesOutsideWindowCheckBox = wx.CheckBox( InterpointSizer.GetStaticBox(), wx.ID_ANY, u"Exclude particles outside simulation window", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.ExcludeParticlesOutsideWindowCheckBox.SetValue(True) 
+		self.ExcludeParticlesOutsideWindowCheckBox.Enable( False )
+		self.ExcludeParticlesOutsideWindowCheckBox.SetToolTip( u"If Monte Carlo simulations are performed and interpoint\ndistances between particles and simulated points are\ncalculated, do not consider particles outside simulation \nwindow when determining interpoint distances" )
+		
+		InterpointSizer.Add( self.ExcludeParticlesOutsideWindowCheckBox, 0, wx.ALL, 5 )
 		
 		
 		AnalysisOptionsSizer.Add( InterpointSizer, 1, wx.EXPAND|wx.ALL, 5 )
@@ -208,12 +217,13 @@ class MainFrame ( wx.Frame ):
 		self.SimulationWindowChoice.SetToolTip( u"The region over which simulated points are generated" )
 		
 		MonteCarloSizer2.Add( self.SimulationWindowChoice, wx.GBPosition( 2, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
-
-		self.StrictLocCheckBox = wx.CheckBox( MonteCarloSizer.GetStaticBox(), wx.ID_ANY, u"Strict localization in window", wx.DefaultPosition, wx.DefaultSize, 0)
-		self.StrictLocCheckBox.SetToolTip(u"If checked, points located outside the window are excluded, even if they are within the spatial resolution of the plasma membrane")
-
-		MonteCarloSizer2.Add(self.StrictLocCheckBox, wx.GBPosition(3, 1), wx.GBSpan(1, 1), wx.ALL, 5)
-
+		
+		self.StrictLocCheckBox = wx.CheckBox( MonteCarloSizer.GetStaticBox(), wx.ID_ANY, u"Strict localization in window", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.StrictLocCheckBox.SetToolTip( u"If checked, points located outside the window are excluded, even if they are within the spatial resolution of the border" )
+		
+		MonteCarloSizer2.Add( self.StrictLocCheckBox, wx.GBPosition( 3, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+		
+		
 		MonteCarloSizer.Add( MonteCarloSizer2, 1, wx.EXPAND, 5 )
 		
 		
@@ -259,23 +269,27 @@ class MainFrame ( wx.Frame ):
 		AnalysisOptionsSizer.Fit( self.AnalysisOptionsTab )
 		self.OptionsNotebook.AddPage( self.AnalysisOptionsTab, u"Analysis", True )
 		self.OutputOptionsTab = wx.Panel( self.OptionsNotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		self.OutputOptionsTab.SetToolTip( u"Note: Excel output may not be available" )
-		
 		OutputOptionsSizer = wx.FlexGridSizer( 3, 2, 0, 0 )
 		OutputOptionsSizer.SetFlexibleDirection( wx.BOTH )
 		OutputOptionsSizer.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 		
-		self.GenerateOutputLabel = wx.StaticText( self.OutputOptionsTab, wx.ID_ANY, u"Output to generate:", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.GenerateOutputLabel.Wrap( -1 )
-		OutputOptionsSizer.Add( self.GenerateOutputLabel, 0, wx.ALL, 5 )
+		self.SaveCoordsCheckBox = wx.CheckBox( self.OutputOptionsTab, wx.ID_ANY, u"Save processed coordinates", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.SaveCoordsCheckBox.SetToolTip( u"Save processed coordinates for each profile,\nincluding adjusted postsynaptic densities and\nMonte Carlo simulated points" )
 		
-		OutputCheckListBoxChoices = [u"Profile summary", u"Particle summary", u"Random summary", u"Session summary"]
-		self.OutputCheckListBox = wx.CheckListBox( self.OutputOptionsTab, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, OutputCheckListBoxChoices, 0 )
-		OutputOptionsSizer.Add( self.OutputCheckListBox, 0, wx.ALL, 5 )
+		OutputOptionsSizer.Add( self.SaveCoordsCheckBox, 0, wx.ALL, 5 )
+		
+		BlankSizer = wx.FlexGridSizer( 0, 2, 0, 0 )
+		BlankSizer.SetFlexibleDirection( wx.BOTH )
+		BlankSizer.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+		
+		
+		OutputOptionsSizer.Add( BlankSizer, 1, wx.EXPAND, 5 )
 		
 		OutputFormatRadioBoxChoices = [ u"Excel", u"Comma-delimited text", u"Tab-delimited text" ]
 		self.OutputFormatRadioBox = wx.RadioBox( self.OutputOptionsTab, wx.ID_ANY, u"Output format", wx.DefaultPosition, wx.DefaultSize, OutputFormatRadioBoxChoices, 1, wx.RA_SPECIFY_COLS )
 		self.OutputFormatRadioBox.SetSelection( 0 )
+		self.OutputFormatRadioBox.SetToolTip( u"Note: Excel output may not be available" )
+		
 		OutputOptionsSizer.Add( self.OutputFormatRadioBox, 1, wx.ALL|wx.EXPAND, 5 )
 		
 		IfOutputExistsRadioBoxChoices = [ u"Enumerate", u"Overwrite" ]
@@ -366,8 +380,6 @@ class MainFrame ( wx.Frame ):
 		
 		self.LogTextCtrl = wx.TextCtrl( LogSizer.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), wx.HSCROLL|wx.TE_MULTILINE )
 		self.LogTextCtrl.SetMaxLength( 0 ) 
-		self.LogTextCtrl.SetFont( wx.Font( 8, 70, 90, 90, False, wx.EmptyString ) )
-		
 		LogSizer.Add( self.LogTextCtrl, 1, wx.ALL|wx.EXPAND, 5 )
 		
 		
@@ -394,7 +406,7 @@ class MainFrame ( wx.Frame ):
 		MainButtonSizer.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 		
 		
-		MainButtonSizer.Add( 0, 0, 1, wx.EXPAND, 5 )
+		MainButtonSizer.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
 		self.StartButton = wx.Button( self.MainButtonPanel, wx.ID_START, u"&Start", wx.DefaultPosition, wx.DefaultSize, 0 )
 		MainButtonSizer.Add( self.StartButton, 0, wx.ALL, 5 )
@@ -417,13 +429,13 @@ class MainFrame ( wx.Frame ):
 		
 		self.SetSizer( MainSizer )
 		self.Layout()
-		MainSizer.Fit( self )
 		self.StatusBar = self.CreateStatusBar( 1, 0, wx.ID_ANY )
 		
 		# Connect Events
 		self.AddButton.Bind( wx.EVT_BUTTON, self.OnAddFile )
 		self.RemoveButton.Bind( wx.EVT_BUTTON, self.OnRemoveFile )
 		self.ViewButton.Bind( wx.EVT_BUTTON, self.OnViewFile )
+		self.InterpointRelationsCheckListBox.Bind( wx.EVT_CHECKLISTBOX, self.OnInterpointRelationsCheckListBoxToggled )
 		self.InterpointCheckBox.Bind( wx.EVT_CHECKBOX, self.OnInterpointCheckbox )
 		self.MonteCarloCheckBox.Bind( wx.EVT_CHECKBOX, self.OnMonteCarloCheckBox )
 		self.SimulationWindowChoice.Bind( wx.EVT_CHOICE, self.OnSimulationWindowChoice )
@@ -448,6 +460,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 	
 	def OnViewFile( self, event ):
+		event.Skip()
+	
+	def OnInterpointRelationsCheckListBoxToggled( self, event ):
 		event.Skip()
 	
 	def OnInterpointCheckbox( self, event ):
@@ -573,7 +588,7 @@ class AboutDialog ( wx.Dialog ):
 		
 		self.TitleLabel = wx.StaticText( self, wx.ID_ANY, u"TitleLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.TitleLabel.Wrap( -1 )
-		self.TitleLabel.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
+		self.TitleLabel.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, wx.EmptyString ) )
 		
 		TitleSizer.Add( self.TitleLabel, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
@@ -591,7 +606,7 @@ class AboutDialog ( wx.Dialog ):
 		
 		self.VersionLabel = wx.StaticText( self, wx.ID_ANY, u"VersionLabel", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.VersionLabel.Wrap( -1 )
-		self.VersionLabel.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 90, False, wx.EmptyString ) )
+		self.VersionLabel.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, wx.EmptyString ) )
 		
 		TopSizer.Add( self.VersionLabel, 0, wx.ALIGN_BOTTOM|wx.TOP|wx.RIGHT|wx.LEFT, 5 )
 		

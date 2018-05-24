@@ -1,3 +1,20 @@
+2018-05-22:
+- Fixed the "_csv_writer object has no 'close' attribute" bug, so csv files
+  can now be saved again.
+- file_io.read_file() again had started to trigger errors when encountering
+  non-ASCII characters, probably since after the migration to Python 3. This
+  has now been fixed, such that coordinate files are opened using
+  OS/locale-specific encoding, with the 'surrogateescape' option to tolerate
+  some decoding errors.
+2018-05-15:
+- Particles outside the simulation window can now be chosen to be excluded for
+  interpoint distance calculations when using Monte Carlo simulations with
+  simulation window other than 'Profile + shell' and provided simulated
+  interpoint distances are also calculated. This allows for better comparison
+  between interparticle distances and simulated interpoint distances.
+- Processed coordinates, including adjusted PSDs and Monte Carlo simulated
+  points, can now be saved to new output files for each profile.
+- Removed option to choose which summary files to save.
 2018-05-08:
 - Fixed a bug that prevented use of PSD as Monte Carlo simulation window.
 - PSD simulation window can now also be used without strict localization.

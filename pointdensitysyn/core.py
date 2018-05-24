@@ -146,6 +146,48 @@ class Point(geometry.Point):
         else:
             return False
 
+    @lazy_property
+    def in_simulation_window(self):
+        """Assess whether self is within Monte Carlo 
+        simulation window.
+        """
+        def is_within_or_associated_with_profile():
+            if self.is_within_profile:
+                return True
+            elif self.opt.monte_carlo_strict_location:
+                return False
+            # as shell width may be smaller than spatial resolution,
+            # we must make sure that the point is also within shell
+            elif self.is_associated_with_profile and self.is_within_shell:
+                return True
+            return False
+
+        if self.is_within_hole:
+            return False
+        if self.opt.monte_carlo_simulation_window == 'profile':
+            return is_within_or_associated_with_profile()
+        elif self.opt.monte_carlo_simulation_window == 'profile + shell':
+            return is_within_or_associated_with_profile() or self.is_within_shell
+        # Now points must relate to PSD, so we should calculate this
+        self.get_psd_association()
+        if self.opt.monte_carlo_simulation_window == 'profile - postsynaptic density':
+            # Only discard points strictly within PSD regardless of
+            # self.opt.monte_carlo_strict_location
+            return is_within_or_associated_with_profile() and not self.is_within_psd
+        elif self.opt.monte_carlo_simulation_window == 'profile + shell - postsynaptic density':
+            # Only discard points strictly within PSD regardless of
+            # self.opt.monte_carlo_strict_location
+            return ((is_within_or_associated_with_profile() or self.is_within_shell)
+                    and not self.is_within_psd)
+        elif self.opt.monte_carlo_simulation_window == 'postsynaptic density':
+            if self.is_within_psd:
+                return True
+            elif self.opt.monte_carlo_strict_location:
+                return False
+            elif self.is_associated_with_psd and (self.is_within_profile or self.is_within_shell):
+                return True
+        return False
+
     def get_lateral_dist_psd(self):
         """Determine nearest PSD and metric and normalized
         lateral distance to this PSD.
@@ -505,11 +547,16 @@ class Profile(object):
         if True not in [val for key, val in self.opt.interpoint_relations.items()
                         if 'simulated' not in key]:
             return
+        if self.opt.interpoint_really_exclude_particles_outside_window():
+            pli = [p for p in self.pli if p.in_simulation_window]
+            randomli = [p for p in self.randomli if p.in_simulation_window]
+        else:
+            pli = self.pli
+            randomli = self.randomli
         if self.opt.interpoint_relations['particle - particle']:
-            self.pp_distli, self.pp_latdistli = self.__get_same_interpoint_distances(self.pli)
+            self.pp_distli, self.pp_latdistli = self.__get_same_interpoint_distances(pli)
         if self.opt.use_random and self.opt.interpoint_relations['random - particle']:
-            self.rp_distli, self.rp_latdistli = self.__get_interpoint_distances2(self.randomli,
-                                                                                 self.pli)
+            self.rp_distli, self.rp_latdistli = self.__get_interpoint_distances2(randomli, pli)
 
     def __get_same_interpoint_distances(self, pointli):
         dli = []
@@ -557,50 +604,7 @@ class Profile(object):
         latdli = [d for d in latdli if d is not None]
         return dli, latdli
 
-# TODO: check simulation windows etc!
     def __run_monte_carlo(self):
-
-        def in_window(p_candidate):
-            def is_within_or_associated_with_profile():
-                """Depending on self.opt.monte_carlo_strict_location,
-                returns True if within or associated with profile.
-                """
-                if p_candidate.is_within_profile:
-                    return True
-                elif self.opt.monte_carlo_strict_location:
-                    return False
-                # as shell width may be smaller than spatial resolution,
-                # we must make sure that the point is also within shell
-                elif p_candidate.is_associated_with_profile and p_candidate.is_within_shell:
-                    return True
-                return False
-
-            if p_candidate.is_within_hole:
-                return False
-            if self.opt.monte_carlo_simulation_window == 'profile':
-                return is_within_or_associated_with_profile()
-            elif self.opt.monte_carlo_simulation_window == 'profile + shell':
-                return is_within_or_associated_with_profile() or p_candidate.is_within_shell
-            # Now points must relate to PSD, so we should calculate this
-            p_candidate.get_psd_association()
-            if self.opt.monte_carlo_simulation_window == 'profile - postsynaptic density':
-                # Only discard points strictly within PSD regardless of
-                # self.opt.monte_carlo_strict_location
-                return is_within_or_associated_with_profile() and not p_candidate.is_within_psd
-            elif self.opt.monte_carlo_simulation_window == 'profile + shell - postsynaptic density':
-                # Only discard points strictly within PSD regardless of
-                # self.opt.monte_carlo_strict_location
-                return (is_within_or_associated_with_profile() or p_candidate.is_within_shell
-                        and not p_candidate.is_within_psd)
-            elif self.opt.monte_carlo_simulation_window == 'postsynaptic density':
-                if p_candidate.is_within_psd:
-                    return True
-                elif self.opt.monte_carlo_strict_location:
-                    return False
-                elif p_candidate.is_associated_with_psd and p_candidate.is_within_shell:
-                    return True
-            return False
-
         # Setting border depending on window and whether
         # opt.monte_carlo_strict_location is True;
         # This is only to speed up the generation of simulated points
@@ -611,8 +615,11 @@ class Profile(object):
             border = 0
         else:
             border = geometry.to_pixel_units(self.opt.spatial_resolution, self.pixelwidth)
-        pli = [p for p in self.pli if in_window(p)]
-        numpoints = len(pli)
+        if self.opt.interpoint_really_exclude_particles_outside_window():
+            pli = [p for p in self.pli if p.in_simulation_window]
+        else:
+            pli = self.pli
+        numpoints = len([p for p in self.pli if p.in_simulation_window])
         box = self.path.bounding_box()
         mcli = []
         for n in range(0, self.opt.monte_carlo_runs):
@@ -632,7 +639,7 @@ class Profile(object):
                     y = random.randint(int(box[0].y - border),
                                        int(box[2].y + border) + 1)
                     p = Point(x, y, ptype='simulated', profile=self)
-                    if p not in mcli[n]['pli'] and in_window(p):
+                    if p not in mcli[n]['pli'] and p.in_simulation_window:
                         break
                 # escape the while loop when a valid simulated point is found
                 mcli[n]['pli'].append(p)
@@ -722,6 +729,7 @@ class Profile(object):
         """ Parse profile data from input file 
         """
         sys.stdout.write("\nParsing '%s':\n" % self.inputfn)
+        # li = open(self.inputfn, mode="r").readlines()
         li = file_io.read_file(self.inputfn)
         if not li:
             raise ProfileError(self, "Could not open input file")
@@ -988,13 +996,10 @@ class OptionData:
         self.input_file_list = []
         self.spatial_resolution = 25
         self.shell_width = 200
-        self.outputs = {'profile summary': True,
-                        'particle summary': True,
-                        'random summary': True,
-                        'session summary': True}
         self.output_file_format = "excel"
         self.output_filename_ext = ".xls"
         self.input_filename_ext = ".pds"
+        self.save_coords = True
         self.output_filename_suffix = ''
         self.output_filename_other_suffix = ''
         self.output_filename_date_suffix = True
@@ -1018,7 +1023,21 @@ class OptionData:
                                      'simulated - simulated': False}
         self.interpoint_shortest_dist = True
         self.interpoint_lateral_dist = False
+        self.interpoint_exclude_particles_outside_window = True
         self.stop_requested = False
+
+    def determine_interpoint_simulated_points(self):
+        simulated_ip = False
+        for key in ('particle - simulated', 'simulated - particle', 'simulated - simulated'):
+            if self.interpoint_relations[key]:
+                simulated_ip = True
+        return simulated_ip
+
+    def interpoint_really_exclude_particles_outside_window(self):
+        return (self.interpoint_exclude_particles_outside_window and
+                self.determine_interpoint_dists and
+                self.run_monte_carlo and
+                self.determine_interpoint_simulated_points())
 
     def reset(self):
         """ Resets all options to default, and removes those that are not

@@ -91,6 +91,10 @@ class Frame(gui.MainFrame):
         self.InterpointRelationsLabel.Enable(self.InterpointCheckBox.GetValue())
         self.ShortestDistCheckBox.Enable(self.InterpointCheckBox.GetValue())
         self.LateralDistCheckBox.Enable(self.InterpointCheckBox.GetValue())
+        self.exclude_particles_checkbox_enable_or_disable()
+
+    def OnInterpointRelationsCheckListBoxToggled(self, event):
+        self.exclude_particles_checkbox_enable_or_disable()
 
     def OnClusterCheckBox(self, event):
         self.ClusterDistSpinCtrl.Enable(self.ClusterCheckBox.GetValue())
@@ -107,6 +111,7 @@ class Frame(gui.MainFrame):
             self.StrictLocCheckBox.Enable(True)
         else:
             self.StrictLocCheckBox.Enable(False)
+        self.exclude_particles_checkbox_enable_or_disable()
 
     def OnSimulationWindowChoice(self, event):
         if self.SimulationWindowChoice.GetStringSelection() in ('Profile', 'Postsynaptic density'):
@@ -132,6 +137,19 @@ class Frame(gui.MainFrame):
         self.set_options_from_ui()
         if not self.set_log():
             return
+        if (self.opt.determine_interpoint_dists and
+                self.opt.determine_interpoint_simulated_points() and
+                self.opt.monte_carlo_simulation_window != 'profile + shell' and not
+                self.opt.interpoint_exclude_particles_outside_window):
+            if not self.yes_no_warn_dialog(
+                    "Determining interpoint distances between particles and simulated points\n"
+                    "generally does not make sense when using a simulation window other than\n"
+                    "'profile + shell' and when 'Exclude particles outside simulation window'\n"
+                    "is unchecked, because also particles outside the simulation window will be\n"
+                    "considered when determining these distances, whereas simulated points are\n"
+                    "only generated in the window.\n\nContinue anyway?\n"):
+                return
+
         self.StatusBar.SetStatusText("Processing...")
         self.exitcode = 1
         event_type = ""
@@ -273,6 +291,7 @@ class Frame(gui.MainFrame):
         set_option('csv_delimiter')
         set_option('action_if_output_file_exists')
         set_option('output_filename_date_suffix')
+        set_option('save_coords')
         set_option('spatial_resolution')
         set_option('shell_width')
         set_option('determine_clusters')
@@ -285,6 +304,7 @@ class Frame(gui.MainFrame):
         set_option('interpoint_dist_mode')
         set_option('interpoint_shortest_dist')
         set_option('interpoint_lateral_dist')
+        set_option('interpoint_exclude_particles_outside_window')
         set_dict_option('interpoint_relations')
         set_dict_option('outputs')
         try:
@@ -363,6 +383,7 @@ class Frame(gui.MainFrame):
         check_str_option('csv_delimiter', ('comma', 'tab'))
         check_str_option('action_if_output_file_exists', ('enumerate', 'overwrite'))
         check_bool_option('output_filename_date_suffix')
+        check_bool_option('save_coords')
         check_int_option('spatial_resolution', lower=0, upper=1000)
         check_int_option('shell_width', lower=0, upper=1000)
         check_bool_option('determine_clusters')
@@ -380,8 +401,8 @@ class Frame(gui.MainFrame):
         check_str_option('interpoint_dist_mode', ('nearest neighbour', 'all'))
         check_bool_option('interpoint_shortest_dist')
         check_bool_option('interpoint_lateral_dist')
+        check_bool_option('interpoint_exclude_particles_outside_window')
         check_bool_dict_option('interpoint_relations')
-        check_bool_dict_option('outputs')
 
     def set_options_in_ui(self):
         self.SpatResSpinCtrl.SetValue(self.opt.spatial_resolution)
@@ -424,8 +445,7 @@ class Frame(gui.MainFrame):
         self.MonteCarloRunsSpinCtrl.Enable(self.MonteCarloCheckBox.GetValue())        
         self.SimulationWindowChoice.Enable(self.MonteCarloCheckBox.GetValue())
         self.SimulationWindowLabel.Enable(self.MonteCarloCheckBox.GetValue())
-        self.OutputCheckListBox.SetCheckedStrings([key.capitalize() for key in self.opt.outputs
-                                                   if self.opt.outputs[key]])
+        self.SaveCoordsCheckBox.SetValue(self.opt.save_coords)
         if self.opt.output_file_format == 'excel':
             self.OutputFormatRadioBox.SetStringSelection('Excel')
         elif self.opt.csv_delimiter == 'comma':
@@ -448,11 +468,7 @@ class Frame(gui.MainFrame):
             self.opt.input_file_list.append(os.path.join(
                 self.InputFileListCtrl.GetItemText(n, 1),
                 self.InputFileListCtrl.GetItemText(n, 0)))
-        for key in self.opt.outputs:
-            if key.capitalize() in self.OutputCheckListBox.GetCheckedStrings():
-                self.opt.outputs[key] = True
-            else:
-                self.opt.outputs[key] = False
+        self.opt.save_coords = self.SaveCoordsCheckBox.GetValue()
         if self.OutputFormatRadioBox.GetStringSelection() == 'Excel':
             self.opt.output_file_format = 'excel'
             self.opt.output_filename_ext = '.xlsx'
@@ -469,6 +485,7 @@ class Frame(gui.MainFrame):
         self.opt.output_filename_date_suffix = self.DateSuffixCheckBox.GetValue()
         if self.OtherSuffixCheckBox.GetValue():
             self.opt.output_filename_other_suffix = self.OtherSuffixTextCtrl.GetValue()
+
         self.opt.spatial_resolution = int(self.SpatResSpinCtrl.GetValue())
         self.opt.shell_width = int(self.ShellWidthSpinCtrl.GetValue())
         self.opt.determine_interpoint_dists = self.InterpointCheckBox.GetValue()
@@ -484,6 +501,8 @@ class Frame(gui.MainFrame):
             self.InterpointModeChoice.GetStringSelection().lower()
         self.opt.interpoint_shortest_dist = self.ShortestDistCheckBox.GetValue()
         self.opt.interpoint_lateral_dist = self.LateralDistCheckBox.GetValue()
+        self.opt.interpoint_exclude_particles_outside_window = \
+            self.ExcludeParticlesOutsideWindowCheckBox.GetValue()
         self.opt.run_monte_carlo = self.MonteCarloCheckBox.GetValue()
         self.opt.monte_carlo_runs = self.MonteCarloRunsSpinCtrl.GetValue()
         self.opt.monte_carlo_simulation_window = \
@@ -492,6 +511,14 @@ class Frame(gui.MainFrame):
         self.opt.determine_clusters = self.ClusterCheckBox.GetValue()
         self.opt.within_cluster_dist = self.ClusterDistSpinCtrl.GetValue()
         self.get_output_dir()
+
+    def exclude_particles_checkbox_enable_or_disable(self):
+        simulated_ips = False
+        if self.InterpointCheckBox.GetValue() and self.MonteCarloCheckBox.GetValue():
+            for key in ('particle - simulated', 'simulated - particle', 'simulated - simulated'):
+                if key.capitalize() in self.InterpointRelationsCheckListBox.GetCheckedStrings():
+                    simulated_ips = True
+        self.ExcludeParticlesOutsideWindowCheckBox.Enable(simulated_ips)
 
     def get_input_dir(self):
         for f in self.opt.input_file_list:
@@ -550,11 +577,11 @@ class Frame(gui.MainFrame):
                     if self.IfLogExistsRadioBox.GetStringSelection() == "Enumerate":
                         logfn = file_io.enum_filename(logfn, 2)
                     else:
-                        f = open(logfn, "a", 0)
+                        f = open(logfn, 'a')
                         f.close()
                 # ok, so file doesn't exist but check if name is valid
                 else:
-                    f = open(logfn, "w", 0)
+                    f = open(logfn, 'w')
                     f.close()
             except IOError:
                 self.show_error("Could not write to log file. Please choose another filename.")
@@ -581,6 +608,16 @@ class Frame(gui.MainFrame):
     
     def yes_no_dialog(self, s):
         dlg = wx.MessageDialog(self, s, version.title, wx.YES_NO | wx.ICON_QUESTION | wx.NO_DEFAULT)
+        try:
+            pressed = dlg.ShowModal()
+        finally:
+            dlg.Destroy()
+        if pressed == wx.ID_YES:
+            return True
+        return False
+
+    def yes_no_warn_dialog(self, s):
+        dlg = wx.MessageDialog(self, s, version.title, wx.YES_NO | wx.ICON_WARNING | wx.NO_DEFAULT)
         try:
             pressed = dlg.ShowModal()
         finally:
@@ -621,11 +658,11 @@ class LogQueue:
             self.errstr = "* Error: could not write to log file: %s\n" % self.fn
             if mode == 'Append':
                 try:
-                    f = open(self.fn, "a", 0)
+                    f = open(self.fn, "a")
                     f.close()
                 except IOError:
                     try:
-                        f = open(self.fn, "w", 0)
+                        f = open(self.fn, "w")
                         f.close()
                     except IOError:
                         sys.stderr.write(self.errstr)
