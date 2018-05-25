@@ -1,3 +1,6 @@
+2018-05-25:
+- Fixed bug introduced in version 1.1.0 that caused the calculation of particle area
+  density in the profile summary to not exclude holes from the total area.
 2018-05-22:
 - Fixed the "_csv_writer object has no 'close' attribute" bug, so csv files
   can now be saved again.

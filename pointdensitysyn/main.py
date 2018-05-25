@@ -111,7 +111,7 @@ def save_output(profileli, opt):
                           len([p for p in pro.pli if (p.is_within_psd
                                                       and p.is_associated_with_path)]),
                           (len([p for p in pro.pli if p.is_within_profile]) / 
-                           m2(pro.path.area(), pro.pixelwidth)),
+                           m2(pro.area, pro.pixelwidth)),
                           len([p for p in pro.pli if (p.is_within_profile and
                                                       not p.is_within_psd)]) /
                           (m2(pro.area, pro.pixelwidth) -
