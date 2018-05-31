@@ -48,6 +48,9 @@ def save_output(profileli, opt):
                             stringconv.yes_or_no(opt.interpoint_shortest_dist)])
                 f.writerow(["Lateral interpoint distances:",
                             stringconv.yes_or_no(opt.interpoint_lateral_dist)])
+                f.writerow(["Exclude particles outside simulation window:",
+                            stringconv.yes_or_no(
+                                opt.interpoint_really_exclude_particles_outside_window())])
             f.writerow(["Monte Carlo simulations performed:",
                         stringconv.yes_or_no(opt.run_monte_carlo)])
             if opt.run_monte_carlo:
@@ -241,7 +244,7 @@ def save_output(profileli, opt):
                                     for prefix in prefixli]):
                 cols[n].extend([m(e, pro.pixelwidth) for e in li])
         # transpose cols and append to table
-        table.extend(map(lambda *col: [e if e is not None else "" for e in col], *cols))
+        table.extend(list(itertools.zip_longest(*cols, fillvalue="")))
         with file_io.FileWriter("interpoint.summary", opt) as f:
             f.writerows(table)
 
@@ -468,6 +471,9 @@ def show_options(opt):
                          % stringconv.yes_or_no(opt.interpoint_shortest_dist))
         sys.stdout.write("Lateral interpoint distances: %s\n"
                          % stringconv.yes_or_no(opt.interpoint_lateral_dist))
+        sys.stdout.write("Exclude particles outside simulation window: %s\n"
+                         % stringconv.yes_or_no(
+                            opt.interpoint_really_exclude_particles_outside_window()))
     sys.stdout.write("Monte Carlo simulations performed: %s\n"
                      % stringconv.yes_or_no(opt.run_monte_carlo))
     if opt.run_monte_carlo:

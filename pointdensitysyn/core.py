@@ -1027,11 +1027,10 @@ class OptionData:
         self.stop_requested = False
 
     def determine_interpoint_simulated_points(self):
-        simulated_ip = False
         for key in ('particle - simulated', 'simulated - particle', 'simulated - simulated'):
             if self.interpoint_relations[key]:
-                simulated_ip = True
-        return simulated_ip
+                return True
+        return False
 
     def interpoint_really_exclude_particles_outside_window(self):
         return (self.interpoint_exclude_particles_outside_window and
