@@ -86,8 +86,7 @@ class Frame(gui.MainFrame):
     def OnInterpointCheckbox(self, event):
         self.InterpointModeChoice.Enable(self.InterpointCheckBox.GetValue())
         self.InterpointModeLabel.Enable(self.InterpointCheckBox.GetValue())
-        self.InterpointRelationsCheckListBox.Enable(
-            self.InterpointCheckBox.GetValue())
+        self.InterpointRelationsCheckListBox.Enable(self.InterpointCheckBox.GetValue())
         self.InterpointRelationsLabel.Enable(self.InterpointCheckBox.GetValue())
         self.ShortestDistCheckBox.Enable(self.InterpointCheckBox.GetValue())
         self.LateralDistCheckBox.Enable(self.InterpointCheckBox.GetValue())
@@ -149,7 +148,6 @@ class Frame(gui.MainFrame):
                     "considered when determining these distances, whereas simulated points are\n"
                     "only generated in the window.\n\nContinue anyway?\n"):
                 return
-
         self.StatusBar.SetStatusText("Processing...")
         self.exitcode = 1
         event_type = ""
@@ -306,7 +304,6 @@ class Frame(gui.MainFrame):
         set_option('interpoint_lateral_dist')
         set_option('interpoint_exclude_particles_outside_window')
         set_dict_option('interpoint_relations')
-        set_dict_option('outputs')
         try:
             with open(self.configfn, 'w') as f:
                 config.write(f)
@@ -425,6 +422,7 @@ class Frame(gui.MainFrame):
         self.InterpointRelationsLabel.Enable(self.InterpointCheckBox.GetValue())
         self.ShortestDistCheckBox.Enable(self.InterpointCheckBox.GetValue())
         self.LateralDistCheckBox.Enable(self.InterpointCheckBox.GetValue())
+        self.exclude_particles_checkbox_enable_or_disable()
         self.ClusterCheckBox.SetValue(self.opt.determine_clusters)
         self.ClusterDistSpinCtrl.SetValue(self.opt.within_cluster_dist)
         self.ClusterDistSpinCtrl.Enable(self.ClusterCheckBox.GetValue())
