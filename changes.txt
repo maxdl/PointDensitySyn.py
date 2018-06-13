@@ -1,3 +1,6 @@
+2018-06-12:
+- Fixed bug that caused incorrect PSD adjustment when the PSD outline crossed the
+  segment of plasma membrane between the end nodes of the membrane.
 2018-05-30:
 - Fixed bug present since migration to Python 3 (due to altered behaviour of map())
   that truncated interpoint distance columns in interpoint summary to the length of

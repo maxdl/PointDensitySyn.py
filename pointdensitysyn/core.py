@@ -369,7 +369,7 @@ class Psd(geometry.SegmentedPath):
         p = Point()
         for n in range(0, len(self)-1): 
             pathli[-1].append(self[n])
-            for d in range(len(self.profile.path)-1):
+            for d in range(-1, len(self.profile.path)-1):
                 p = geometry.segment_intersection(self[n],
                                                   self[n+1],
                                                   self.profile.path[d],
@@ -404,7 +404,7 @@ class Psd(geometry.SegmentedPath):
         self.orient_to_path(self.profile.path)
         return self
 
-    def get_synm(self):
+    def get_synm(self) -> geometry.SegmentedPath:
         """ Return synaptic membrane (i e the part of the plasma
         membrane bounded by the PSD). Assume that the PSD is
         adjusted so as to end exactly on plasma membrane membrane,
@@ -515,15 +515,15 @@ class Profile(object):
             self.errflag = True
 
     @lazy_property
-    def area(self):
+    def area(self) -> float:
         """Determine area of profile, excluding holes"""
         tot_hole_area = sum([h.area() for h in self.holeli])
         return self.path.area() - tot_hole_area
 
-    def contains(self, p):
+    def contains(self, p) -> bool:
         """Determine if a point is inside profile, excluding holes."""
         if not p:
-            return None
+            return False
         return p.is_within_profile(self)
 
     def __compute_stuff(self):
@@ -914,8 +914,7 @@ class Profile(object):
                                                          _path[p + 1],
                                                          _path[q],
                                                          _path[q + 1]):
-                            raise ProfileError(
-                                self, "%s invalid (crosses itself)" % s)
+                            raise ProfileError(self, "%s invalid (crosses itself)" % s)
             return True
 
         check_path(self.path, "Profile border")

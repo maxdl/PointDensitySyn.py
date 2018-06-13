@@ -1,6 +1,7 @@
 import functools
 import math
 import sys
+from typing import Tuple
 
 
 class Point(object):
@@ -76,10 +77,10 @@ class Point(object):
     def __add__(self, q):
         return Point(self.x + q.x, self.y + q.y)
 
-    def dist(self, q):
+    def dist(self, q) -> float:
         return math.sqrt((self.x - q.x) ** 2 + (self.y - q.y) ** 2)
 
-    def signed_dist_to_line(self, p, q):
+    def signed_dist_to_line(self, p, q) -> float:
         """ Calculate signed distance from self to the line defined by
             p and q. Note that the function does not allow correct
             comparison of signs between lines parallel to either axis
@@ -95,13 +96,13 @@ class Point(object):
             c = p.y / (q.y - p.y) - p.x / (q.x - p.x)
         return (a * self.x + b * self.y + c) / math.sqrt(a ** 2 + b ** 2)
 
-    def is_within_polygon(self, pol):
+    def is_within_polygon(self, pol) -> bool:
         """  Determine whether point p is inside polygon;
              Uses the crossing number method => works only with simple
              polygons.
         """
         if not pol:
-            return None
+            return False
         cn = 0
         for n in range(-1, len(pol) - 1):
             if ((pol[n].y <= self.y < pol[n + 1].y)

@@ -414,7 +414,7 @@ def save_output(profileli, opt):
                 f.close()
             except IOError:
                 sys.stderr.write("Could not write to output file %s" % fn)
-            sys.stdout.write("Saved processed coordinate files to folder '%s.'" % coords_dir)
+        sys.stdout.write("Saved processed coordinate files to folder '%s.'" % coords_dir)
 
     sys.stdout.write("\nSaving summaries to %s:\n" % opt.output_dir)
     opt.save_result = {'any_saved': False, 'any_err': False}
